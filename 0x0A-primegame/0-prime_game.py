@@ -1,78 +1,34 @@
 #!/usr/bin/python3
-"""
-Prime Game
-"""
+''' prime game module '''
 
 
-def findMultiples(num, targets):
-    """
-    Finds multiples of a given number within a list
-    """
-    for i in targets:
-        if i % num == 0:
-            targets.remove(i)
-    return targets
+def rwh_primes(n):
+    '''
+    adapted from:
+    https://stackoverflow.com/questions/2068372
+    /fastest-way-to-list-all-primes-below-n-in-python/3035188#3035188
+    '''
+    sieve = [True] * n
+    for i in range(3, int(n**0.5) + 1, 2):
+        if sieve[i]:
+            sieve[i * i::2 * i] = [False] * int((n - i * i - 1) / (2 * i) + 1)
+    return [2] + [i for i in range(3, n, 2) if sieve[i]]
 
 
-def isPrime(i):
-    """
-    Check if a number is prime.
-    """
-    if i == 1:
-        return False
-    for j in range(2, i):
-        if i % j == 0:
-            return False
-    return True
-
-
-def findPrimes(n):
-    """
-    Dispatch a given set into prime numbers and non-prime numbers.
-    """
-    counter = 0
-    target = list(n)
-    for i in range(1, len(target) + 1):
-        if isPrime(i):
-            counter += 1
-            target.remove(i)
-            target = findMultiples(i, target)
-        else:
-            pass
-    return counter
+def playMatch(n):
+    ''' plays a single round '''
+    primes = rwh_primes(n + 1)
+    return 1 - (len(primes) % 2) if n > 1 else 1
 
 
 def isWinner(x, nums):
-    """
-    Maria and Ben are playing a game.Given a set of consecutive integers
-    starting from 1 up to and including n, they take turns choosing a
-    prime number from the set and removing that number and its
-    multiples from the set.
-    The player that cannot make a move loses the game.
-
-    They play x rounds of the game, where n may be different for each round.
-    Assuming Maria always goes first and both players play optimally,
-    determine who the winner of each game is.
-    """
-    players = {'Maria': 0, 'Ben': 0}
-    cluster = set()
-    for elem in range(x):
-        nums.sort()
-        num = nums[elem]
-        for i in range(1, num + 1):
-            cluster.add(i)
-            if i == num + 1:
-                break
-        temp = findPrimes(cluster)
-
-        if temp % 2 == 0:
-            players['Ben'] += 1
-        elif temp % 2 != 0:
-            players['Maria'] += 1
-
-    if players['Maria'] > players['Ben']:
-        return 'Maria'
-    elif players['Maria'] < players['Ben']:
-        return 'Ben'
-    else:
+    ''' plays a full game '''
+    if type(x) is not int or x < 1:
         return None
+    players = {0: 'Maria', 1: 'Ben'}
+    wins = {0: 0, 1: 0}
+    for num in nums:
+        wins[playMatch(num)] += 1
+    return (None if wins[0] == wins[1]
+            else players[0] if wins[0] > wins[1]
+            else players[1])
